@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update GitHub Page Content</title>
+</head>
+<body>
+    <h1>Update GitHub Page Content</h1>
+    <form id="updateForm">
+        <textarea id="newContent" rows="10" cols="50" placeholder="Enter new content here..."></textarea>
+        <br>
+        <input type="submit" value="Update Content">
+    </form>
+
+    <script>
+        const token = 'YOUR_PERSONAL_ACCESS_TOKEN'; // Replace with your PAT
+        const owner = 'YOUR_GITHUB_USERNAME'; // Replace with your GitHub username
+        const repo = 'YOUR_REPOSITORY_NAME'; // Replace with your repository name
+        const path = 'PATH_TO_FILE.md'; // Replace with the path to the file you want to update
+
+        document.getElementById('updateForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const newContent = document.getElementById('newContent').value;
+
+            fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const sha = data.sha;
+                const updateData = {
+                    message: 'Updating content via GitHub Pages',
+                    content: btoa(newContent),
+                    sha: sha
+                };
+
+                return fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.commit) {
+                    alert('Content updated successfully!');
+                } else {
+                    alert('Failed to update content.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating content.');
+            });
+        });
+    </script>
+</body>
+</html>
